@@ -1,10 +1,10 @@
 #!/bin/bash        
 #title           : updateNodeModules.sh
 #description     : Installs the node packages required by Kudu
-#author		     : Sanchit Mehta
+#author		 : Sanchit Mehta
 #date            : 20180816
 #version         : 0.1    
-#usage		     : sh updateNodeModules.sh
+#usage		 : sh updateNodeModules.sh
 #================================================================================
 
 MAX_RETRIES=5
@@ -26,7 +26,7 @@ retry() {
 }
 
 copy_to_build_dir() {
-  rm -rf "$@node_modules"	
+  rm -rf "$@node_modules"
   if [ ! -d "node_modules" ]; then
     exit 1
   else
@@ -37,7 +37,8 @@ copy_to_build_dir() {
   fi
 }
 
-printf "\n\nInstalling Kudu Script\n\n" 
+printf "\n\nInstalling Kudu Script\n\n"
 echo "$@"
 retry npm --loglevel=error install https://github.com/projectkudu/KuduScript/tarball/16de31b5f5ca590ea085979e5fa5e74bb62f647e
 copy_to_build_dir "$@"
+
