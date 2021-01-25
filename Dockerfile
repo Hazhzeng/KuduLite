@@ -128,18 +128,18 @@ RUN cd /tmp/KuduLite \
     && find /var/nuget -type d -exec chmod 777 {} \;
 
 COPY Container.Dependencies/startup.sh /
+COPY Container.Dependencies/webssh-watcher.sh /opt/webssh
 
-RUN chmod 777 /startup.sh
-
-RUN benv node=9 npm=6 npm install -g kudusync
-RUN benv node=9 npm=6 npm install pm2@latest -g
-
-RUN ln -s /opt/nodejs/9/lib/node_modules/npm/bin/npm-cli.js /usr/bin/npm-cli.js
+RUN chmod +x /startup.sh \
+    && chmod +x /opt/webssh/webssh-watcher.sh \
+    && benv node=9 npm=6 npm install -g kudusync \
+    && ln -s /opt/nodejs/9/lib/node_modules/npm/bin/npm-cli.js /usr/bin/npm-cli.js
 
 ENV PATH=$PATH:/opt/nodejs/9/bin
 
 ENV KUDU_WEBSSH_PORT=3000
 ENV KUDU_BUILD_VERSION=0.0.1
+ENV COMPUTERNAME=TestMachine
 
 # Default App Settings for Main App Container SSH
 ENV WEBSITE_SSH_USER=root

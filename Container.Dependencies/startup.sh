@@ -50,23 +50,21 @@ echo "$KUDU_USER:$KUDU_USER_PASSWORD" | chpasswd
 usermod -d /home $KUDU_USER
 mkdir -p /home/LogFiles/webssh
 
-sed -i "s/webssh-port-placeholder/$KUDU_WEBSSH_PORT/g" /opt/webssh/config.json
-/bin/bash -c "WEBSITE_SSH_USER=$WEBSITE_SSH_USER WEBSITE_SSH_PASSWORD=$WEBSITE_SSH_PASSWORD USER_NAME=$KUDU_USER USER_PASSWORD=$KUDU_USER_PASSWORD pm2 start /opt/webssh/index.js -o /home/LogFiles/webssh/pm2.log -e /home/LogFiles/webssh/pm2.err &"
-
-sed -i "s/webssh-port-placeholder/$KUDU_WEBSSH_PORT/g" /opt/webssh/config.json
-/bin/bash -c "benv node=9 npm=6 WEBSITE_SSH_USER=$WEBSITE_SSH_USER WEBSITE_SSH_PASSWORD=$WEBSITE_SSH_PASSWORD USER_NAME=$USER_NAME USER_PASSWORD=$USER_PASSWORD pm2 start /opt/webssh/index.js -o /home/LogFiles/webssh/pm2.log -e /home/LogFiles/webssh/pm2.err &"
-
 export KUDU_RUN_USER="$USER_NAME"
 export HOME=/home
 export WEBSITE_SITE_NAME=$SITE_NAME
 export APPSETTING_SCM_USE_LIBGIT2SHARP_REPOSITORY=0
 export KUDU_APPPATH=/opt/Kudu
 export APPDATA=/opt/Kudu/local
+export USER_NAME=$KUDU_USER
+export USER_PASSWORD=$KUDU_USER_PASSWORD
 
 # Get environment variables to show up in SSH session
 eval $(printenv | awk -F= '{print "export " $1"="$2 }' >> /etc/profile)
 
 service ssh restart
+sed -i "s/webssh-port-placeholder/$KUDU_WEBSSH_PORT/g" /opt/webssh/config.json
+/bin/bash -c "benv node=9 npm=6 /opt/webssh/webssh-watcher.sh node /opt/webssh/index.js &"
 
 cd /opt/Kudu
 
