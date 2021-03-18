@@ -211,7 +211,7 @@ namespace Kudu.Console
                 finally
                 {
                     System.Console.WriteLine("Deployment Logs : '"+
-                        env.AppBaseUrlPrefix+ "/newui/jsonviewer?view_url=/api/deployments/" +
+                        env.AppBaseUrlPrefix+ "/jsonviewer?view_url=/api/deployments/" +
                         gitRepository.GetChangeSet(settingsManager.GetBranch()).Id+"/log'");
                 }
             }
@@ -289,7 +289,7 @@ namespace Kudu.Console
                 EnvironmentHelper.NormalizeBinPath(binPath),
                 repositoryPath,
                 requestId,
-                Path.Combine(AppContext.BaseDirectory, "KuduConsole", "kudu.dll"),
+                Path.Combine(AppContext.BaseDirectory, "KuduConsole", "kudu"),
                 null,
                 new FileSystemPathProvider(new NullMeshPersistentFileSystem()));
         }

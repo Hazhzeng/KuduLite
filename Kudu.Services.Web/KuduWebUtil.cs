@@ -31,7 +31,7 @@ namespace Kudu.Services.Web
 {
     internal static class KuduWebUtil
     {
-        private const string KuduConsoleFilename = "kudu.dll";
+        private const string KuduConsoleFilename = "kudu";
         private const string KuduConsoleRelativePath = "KuduConsole";
 
         private static Dictionary<string, IOperationLock> _namedLocks;
@@ -217,29 +217,17 @@ namespace Kudu.Services.Web
                 var fileText = FileSystemHelpers.ReadAllText(gitPostReceiveHookFile);
                 var isRunningOnAzure = System.Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID") != null;
 
-                if(!EnvironmentHelper.IsDynamicInstallEnvironment())
+                if (fileText.Contains("/usr/bin/mono"))
                 {
-                    if (fileText.Contains("/usr/bin/mono"))
+                    if (isRunningOnAzure)
                     {
-                        if (isRunningOnAzure)
-                        {
-                            FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("/usr/bin/mono", "benv dotnet=2.2 dotnet"));
-                        }
-                    }
-                    else if (!fileText.Contains("benv") && fileText.Contains("dotnet") && isRunningOnAzure)
-                    {
-                        FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("dotnet", "benv dotnet=2.2 dotnet"));
+                        FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("/usr/bin/mono", ""));
                     }
                 }
-                else
+                else if (!fileText.Contains("benv") && fileText.Contains("dotnet") && isRunningOnAzure)
                 {
-                    // Dynamic Install should just contain dotnet
-                    if (fileText.Contains("benv") && fileText.Contains("dotnet") && isRunningOnAzure)
-                    {
-                        FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("benv dotnet=2.2", "dotnet"));
-                    }
+                    FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("benv dotnet=3.1 dotnet", ""));
                 }
-
             }
 
             if (FileSystemHelpers.DirectoryExists(Path.Combine(environment.RootPath, ".mono"))
@@ -311,7 +299,7 @@ namespace Kudu.Services.Web
         /// Returns a specified environment configuration as the current webapp's
         /// default configuration during the runtime.
         /// </summary>
-        internal static IEnvironment GetEnvironment(IHostingEnvironment hostingEnvironment,
+        internal static IEnvironment GetEnvironment(IWebHostEnvironment hostingEnvironment,
             IFileSystemPathProvider fileSystemPathsProvider,
             IDeploymentSettingsManager settings = null,
             IHttpContextAccessor httpContextAccessor = null)

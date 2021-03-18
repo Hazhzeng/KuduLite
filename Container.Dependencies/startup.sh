@@ -69,4 +69,4 @@ sed -i "s/webssh-port-placeholder/$KUDU_WEBSSH_PORT/g" /opt/webssh/config.json
 cd /opt/Kudu
 
 echo $(date) running .net core
-ASPNETCORE_URLS=http://0.0.0.0:"$PORT" runuser -p -u "$USER_NAME" -- benv dotnet=2.2 dotnet Kudu.Services.Web.dll
+ASPNETCORE_URLS=http://0.0.0.0:"$PORT" runuser -p -u "$USER_NAME" -- /opt/Kudu/Kudu.Services.Web

@@ -14,7 +14,7 @@ namespace Kudu.Core.SourceControl.Git
         // Command to launch the post receive hook
         // CORE NOTE modified the script to run "dotnet," assuming EXEPATH points
         // to a framework-dependent Core app.
-        public static string KUDUCOMMAND = "benv dotnet=2.2 dotnet \"$" + EXEPATH + "\" " +
+        public static string KUDUCOMMAND = "benv dotnet=3.1 dotnet \"$" + EXEPATH + "\" " +
                                            "\"$" + APPPATH + "\" " +
                                            "\"$" + MSBUILD + "\" " +
                                            "\"$" + DEPLOYER + "\"";
@@ -22,7 +22,7 @@ namespace Kudu.Core.SourceControl.Git
         // Command to launch the post receive hook for dynamic install
         // CORE NOTE modified the script to run "dotnet," assuming EXEPATH points
         // to a framework-dependent Core app.
-        public static string KUDUCOMMAND_DYNAMICINSTALL = "dotnet \"$" + EXEPATH + "\" " +
+        public static string KUDUCOMMAND_DYNAMICINSTALL = "\"$" + EXEPATH + "\" " +
                                            "\"$" + APPPATH + "\" " +
                                            "\"$" + MSBUILD + "\" " +
                                            "\"$" + DEPLOYER + "\"";
