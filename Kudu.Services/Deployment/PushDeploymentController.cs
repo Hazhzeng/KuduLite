@@ -100,13 +100,17 @@ namespace Kudu.Services.Deployment
                 message = Request.Query["message"];
             }
 
+            string trackDeploymentProgress = null;
+            if (Request.Query.ContainsKey("trackDeploymentProgress"))
+            {
+                trackDeploymentProgress = Boolean.Parse(Request.Query["trackDeploymentProgress"]);
+            }
+
            // var responseBodyStream = new MemoryStream();
            // HttpContext.Response.Body = responseBodyStream;
 
             using (_tracer.Step("ZipPushDeploy"))
             {
-                string deploymentId = GetExternalDeploymentId(Request);
-
                 var deploymentInfo = new ArtifactDeploymentInfo(_environment, _traceFactory)
                 {
                     AllowDeploymentWhileScmDisabled = true,
@@ -117,7 +121,7 @@ namespace Kudu.Services.Deployment
                     TargetChangeset =
                         DeploymentManager.CreateTemporaryChangeSet(message: "Deploying from pushed zip file"),
                     CommitId = null,
-                    ExternalDeploymentId = deploymentId,
+                    DeploymentTrackingId = trackDeploymentProgress ? Guid.NewGuid().ToString() : null,
                     RepositoryType = RepositoryType.None,
                     Fetch = LocalZipHandler,
                     DoFullBuildByDefault = false,
@@ -154,13 +158,13 @@ namespace Kudu.Services.Deployment
             [FromQuery] string author = null,
             [FromQuery] string authorEmail = null,
             [FromQuery] string deployer = DefaultDeployer,
-            [FromQuery] string message = DefaultMessage)
+            [FromQuery] string message = DefaultMessage,
+            [FromQuery] bool trackDeploymentProgress = false)
         {
             using (_tracer.Step("ZipPushDeployViaUrl"))
             {
-                string deploymentId = GetExternalDeploymentId(Request);
-
-                string zipUrl = GetArtifactURLFromJSON(requestJson);
+                // ARM Request payload is wrapped in properties {'properties':{'uri':''}}
+                string zipUrl = ArmUtils.IsArmRequest(Request) ? GetArticfactURLFromARMJSON(requestJson) : GetArtifactURLFromJSON(requestJson);
 
                 var deploymentInfo = new ArtifactDeploymentInfo(_environment, _traceFactory)
                 {
@@ -172,7 +176,7 @@ namespace Kudu.Services.Deployment
                     TargetChangeset =
                         DeploymentManager.CreateTemporaryChangeSet(message: "Deploying from pushed zip file"),
                     CommitId = null,
-                    ExternalDeploymentId = deploymentId,
+                    DeploymentTrackingId = trackDeploymentProgress ? Guid.NewGuid().ToString() : null,
                     RepositoryType = RepositoryType.None,
                     Fetch = LocalZipHandler,
                     DoFullBuildByDefault = false,
@@ -226,10 +230,14 @@ namespace Kudu.Services.Deployment
                 message = Request.Query["message"];
             }
 
+            string trackDeploymentProgress = null;
+            if (Request.Query.ContainsKey("trackDeploymentProgress"))
+            {
+                trackDeploymentProgress = Boolean.Parse(Request.Query["trackDeploymentProgress"]);
+            }
+
             using (_tracer.Step("WarPushDeploy"))
             {
-                string deploymentId = GetExternalDeploymentId(Request);
-
                 var appName = HttpContext.Request.Query["name"].ToString();
                 if (string.IsNullOrWhiteSpace(appName))
                 {
@@ -250,7 +258,7 @@ namespace Kudu.Services.Deployment
                     TargetChangeset =
                         DeploymentManager.CreateTemporaryChangeSet(message: "Deploying from pushed war file"),
                     CommitId = null,
-                    ExternalDeploymentId = deploymentId,
+                    DeploymentTrackingId = trackDeploymentProgress ? Guid.NewGuid().ToString() : null,
                     RepositoryType = RepositoryType.None,
                     Fetch = LocalZipFetch,
                     DoFullBuildByDefault = false,
@@ -293,15 +301,14 @@ namespace Kudu.Services.Deployment
             [FromQuery] string path = null,
             [FromQuery] bool? restart = true,
             [FromQuery] bool? clean = null,
-            [FromQuery] bool ignoreStack = false
+            [FromQuery] bool ignoreStack = false,
+            [FromQuery] bool trackDeploymentProgress = false
             )
         {
             string remoteArtifactUrl = null;
 
             using (_tracer.Step(Constants.OneDeploy))
             {
-                string deploymentId = GetExternalDeploymentId(Request);
-
                 try
                 {
                     if (Request.MediaTypeContains("application/json"))
@@ -326,7 +333,7 @@ namespace Kudu.Services.Deployment
                             ignoreStack = requestJson.Value<bool>("ignorestack");
                         }
 
-                        remoteArtifactUrl = GetArtifactURLFromJSON(requestJson);
+                        remoteArtifactUrl = ArmUtils.IsArmRequest(Request) ? GetArticfactURLFromARMJSON(requestJson) : GetArtifactURLFromJSON(requestJson);
                     }
                 }
                 catch (Exception ex)
@@ -364,7 +371,7 @@ namespace Kudu.Services.Deployment
                     TargetRootPath = _environment.WebRootPath,
                     TargetChangeset = DeploymentManager.CreateTemporaryChangeSet(message: Constants.OneDeploy),
                     CommitId = null,
-                    ExternalDeploymentId = deploymentId,
+                    DeploymentTrackingId = trackDeploymentProgress ? Guid.NewGuid().ToString() : null,
                     RepositoryType = RepositoryType.None,
                     RemoteURL = remoteArtifactUrl,
                     Fetch = OneDeployFetch,
@@ -489,22 +496,31 @@ namespace Kudu.Services.Deployment
             }
         }
 
-        private static string GetExternalDeploymentId(HttpRequest request)
-        {
-            string deploymentId = null;
-            Microsoft.Extensions.Primitives.StringValues idValues;
-
-            if (request.Headers.TryGetValue(Constants.ScmDeploymentIdHeader, out idValues) && idValues.Count() > 0)
-            {
-                deploymentId = idValues.ElementAt(0);
-            }
-
-            return deploymentId;
-        }
-
         private ObjectResult StatusCode400(string message)
         {
             return StatusCode(StatusCodes.Status400BadRequest, message);
+        }
+
+        private string GetArticfactURLFromARMJSON(JObject requestObject)
+        {
+            using (_tracer.Step("Reading the artifact URL from the ARM request JSON"))
+            {
+                try
+                {
+                    // ARM template should have properties field and a packageUri field inside the properties field.
+                    string packageUri = requestObject.Value<JObject>("properties").Value<string>("packageUri");
+                    if (string.IsNullOrEmpty(packageUri))
+                    {
+                        throw new ArgumentException("Invalid Url in the JSON request");
+                    }
+                    return packageUri;
+                }
+                catch (Exception ex)
+                {
+                    _tracer.TraceError(ex, "Error reading the URL from the JSON {0}", requestObject.ToString());
+                    throw;
+                }
+            }
         }
 
         private string GetArtifactURLFromJSON(JObject requestObject)
@@ -633,6 +649,12 @@ namespace Kudu.Services.Deployment
 
             var result =
                 await _deploymentManager.FetchDeploy(deploymentInfo, isAsync, UriHelper.GetRequestUri(Request), "HEAD");
+
+            if (deploymentInfo != null
+                && !string.IsNullOrEmpty(deploymentInfo.DeploymentTrackingId))
+            {
+                Response.Headers.Add(Constants.ScmDeploymentIdHeader, deploymentInfo.DeploymentTrackingId);
+            }
 
             switch (result)
             {
