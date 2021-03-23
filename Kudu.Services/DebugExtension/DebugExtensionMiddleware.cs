@@ -12,9 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Kudu.Services.TunnelServer
 {
-    public class DebugExtensionMiddleware 
+    public class DebugExtensionMiddleware
     {
-        
+
         private const int MAX_BUFFER_SIZE = 65536;
         private const int CLOSE_TASK_TIMEOUT_IN_MILLISECONDS = 5000;
         private static ILoggerFactory loggerFactory = null;
@@ -24,7 +24,7 @@ namespace Kudu.Services.TunnelServer
         {
             ConfigureLogging();
         }
-        
+
         private class LSiteStatusResponse
         {
             public int port { get; }
@@ -46,7 +46,7 @@ namespace Kudu.Services.TunnelServer
                 this.msg = msg;
             }
         }
-        
+
         public void ConfigureLogging()
         {
             if (loggerFactory == null)
@@ -72,7 +72,7 @@ namespace Kudu.Services.TunnelServer
                     {
                         logLevel = LogLevel.None;
                     }
-                    Console.WriteLine("Setting LogLevel to " + level);
+                    Console.WriteLine("Setting LogLevel to " + logLevel);
                 }
                 loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             }
@@ -85,7 +85,7 @@ namespace Kudu.Services.TunnelServer
 
         public async Task Invoke (HttpContext context)
         {
-             
+
                 int tunnelPort = -1;
                 if (context.Request.Headers.ContainsKey("AppsvcTunnelPort"))
                 {
@@ -208,7 +208,7 @@ namespace Kudu.Services.TunnelServer
                 else
                 {
                     // Case insensitive test+comparison of the query string key
-                    if (context.Request.QueryString.HasValue && 
+                    if (context.Request.QueryString.HasValue &&
                         context.Request.QueryString.Value.IndexOf("GetStatus", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         _logger.LogInformation("Got a status request... connecting to " + ipAddress + ":" + debugPort);
@@ -286,13 +286,13 @@ namespace Kudu.Services.TunnelServer
                     }
                     else
                     {
-                        context.Response.StatusCode = 400;                    
+                        context.Response.StatusCode = 400;
                     }
                 }
         }
-        
+
         /**
-        *  DebugSessionState holds the websocket and 
+        *  DebugSessionState holds the websocket and
         *  debuggeeSocket that are part of a debug session.
         */
         class DebugSessionState
@@ -315,7 +315,7 @@ namespace Kudu.Services.TunnelServer
                 Buffer = new byte[bufferSize];
             }
         }
-        
+
         /**
          * OnDataReceiveFromDebuggee is the async callback called when
          * we have data from debuggeeSocket. On receiving data from debuggee,
@@ -397,8 +397,8 @@ namespace Kudu.Services.TunnelServer
             try
             {
                 //
-                // Define a maximum message size this handler can receive (1K in this case) 
-                // and allocate a buffer to contain the received message. 
+                // Define a maximum message size this handler can receive (1K in this case)
+                // and allocate a buffer to contain the received message.
                 // This buffer will be reused for each receive operation.
                 //
 

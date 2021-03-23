@@ -100,7 +100,7 @@ namespace Kudu.Services.Deployment
                 message = Request.Query["message"];
             }
 
-            string trackDeploymentProgress = null;
+            bool trackDeploymentProgress = false;
             if (Request.Query.ContainsKey("trackDeploymentProgress"))
             {
                 trackDeploymentProgress = Boolean.Parse(Request.Query["trackDeploymentProgress"]);
@@ -230,7 +230,7 @@ namespace Kudu.Services.Deployment
                 message = Request.Query["message"];
             }
 
-            string trackDeploymentProgress = null;
+            bool trackDeploymentProgress = false;
             if (Request.Query.ContainsKey("trackDeploymentProgress"))
             {
                 trackDeploymentProgress = Boolean.Parse(Request.Query["trackDeploymentProgress"]);
