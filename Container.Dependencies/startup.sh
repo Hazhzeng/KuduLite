@@ -56,8 +56,8 @@ export WEBSITE_SITE_NAME=$SITE_NAME
 export APPSETTING_SCM_USE_LIBGIT2SHARP_REPOSITORY=0
 export KUDU_APPPATH=/opt/Kudu
 export APPDATA=/opt/Kudu/local
-export USER_NAME=$KUDU_USER
-export USER_PASSWORD=$KUDU_USER_PASSWORD
+export SSH_USER_NAME=$KUDU_USER
+export SSH_USER_PASSWORD=$KUDU_USER_PASSWORD
 
 # Get environment variables to show up in SSH session
 eval $(printenv | awk -F= '{print "export " $1"="$2 }' >> /etc/profile)

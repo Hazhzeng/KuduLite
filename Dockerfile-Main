@@ -1,4 +1,4 @@
-ARG ORYX_BASE_IMAGE=mcr.microsoft.com/oryx/build:20210120.1
+ARG ORYX_BASE_IMAGE=BASE_IMAGE_NAME_PLACEHOLDER
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 WORKDIR /opt/Kudu
 RUN apt-get update
@@ -36,6 +36,12 @@ COPY Container.Dependencies/webssh.zip /tmp/
 COPY Container.Dependencies/ssh /tmp/
 COPY --from=build-env /kudu_commit.log /kudu_commit.log
 
+RUN apt-get update \
+  && apt-get install -y libreadline-dev bzip2 build-essential libssl-dev zlib1g-dev libpq-dev libsqlite3-dev \
+  curl patch gawk g++ gcc git make libc6-dev patch libreadline6-dev libyaml-dev sqlite3 autoconf \
+  libgdbm-dev libncurses5-dev automake libtool bison pkg-config libffi-dev bison libxslt-dev \
+  libxml2-dev --no-install-recommends wget default-libmysqlclient-dev
+
 # rbenv
 RUN git clone https://github.com/rbenv/rbenv.git /usr/local/.rbenv
 RUN chmod -R 777 /usr/local/.rbenv
@@ -54,7 +60,7 @@ ENV RUBY_CONFIGURE_OPTS=--disable-install-doc
 
 ENV RUBY_CFLAGS=-O3
 
-RUN apt-get update && apt-get install -y libssl1.0-dev
+RUN apt-get install -y libssl1.0-dev
 RUN eval "$(rbenv init -)" \
   && export WEBSITES_DEFAULT_RUBY_VERSION="2.3.3" \
   && rbenv install $WEBSITES_DEFAULT_RUBY_VERSION \
@@ -195,6 +201,8 @@ ENV WEBSITE_SSH_USER=root
 ENV WEBSITE_SSH_PASSWORD=Docker!
 
 EXPOSE 8181
+
+RUN apt-get update && apt-get install -y libssl1.0-dev
 
 ENTRYPOINT [ "/startup.sh" ]
 CMD [ "1002", "kudu_group", "1001", "kudu_user", "localsite" ]
