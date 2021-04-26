@@ -32,7 +32,7 @@ ENV WEBSITE_SSH_PASSWORD=Docker!
 
 ENV KUDU_BUILD_VERSION=1.0.0
 
-COPY webssh.zip ssh /tmp/
+COPY Container.Dependencies/webssh.zip Container.Dependencies/ssh /tmp/
 COPY --from=build-env /kudu_commit.log /kudu_commit.log
 
 # Install webssh
@@ -127,7 +127,7 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 
 COPY --from=build-env /opt/Kudu /opt/Kudu
 
-COPY startup.sh /
+COPY Container.Dependencies/startup.sh /
 
 RUN chmod 777 /startup.sh \
   && pam-auth-update \
