@@ -94,7 +94,7 @@ namespace Kudu.Core.Deployment
 
         public DeployResult GetResult(string id)
         {
-             return GetResult(id, _status.ActiveDeploymentId, IsDeploying);   
+             return GetResult(id, _status.ActiveDeploymentId, IsDeploying);
         }
 
         public IEnumerable<LogEntry> GetLogEntries(string id)
@@ -290,7 +290,7 @@ namespace Kudu.Core.Deployment
                         tracer.TraceError(exception);
                         throw new DeploymentFailedException(exception);
                     }
-           
+
             }
         }
 
@@ -375,7 +375,7 @@ namespace Kudu.Core.Deployment
             // Order the results by date (newest first). Previously, we supported OData to allow
             // arbitrary queries, but that was way overkill and brought in too many large binaries.
             IEnumerable<DeployResult> results;
-            results = EnumerateResults().OrderByDescending(t => t.ReceivedTime).ToList();                
+            results = EnumerateResults().OrderByDescending(t => t.ReceivedTime).ToList();
             try
             {
                 results = PurgeDeployments(results);
@@ -554,7 +554,7 @@ namespace Kudu.Core.Deployment
 
         private DeployResult GetResult(string id, string activeDeploymentId, bool isDeploying)
         {
-            var file = VerifyDeployment(id, isDeploying);            
+            var file = VerifyDeployment(id, isDeploying);
             if (file == null)
             {
                 return null;
@@ -737,8 +737,8 @@ namespace Kudu.Core.Deployment
                         }
 
                         await PostDeploymentHelper.SyncFunctionsTriggers(
-                            _environment.RequestId, 
-                            new PostDeploymentTraceListener(tracer, logger), 
+                            _environment.RequestId,
+                            new PostDeploymentTraceListener(tracer, logger),
                             deploymentInfo?.SyncFunctionsTriggersPath);
 
                         TouchWatchedFileIfNeeded(_settings, deploymentInfo, context);
@@ -789,7 +789,7 @@ namespace Kudu.Core.Deployment
 
         private void PreDeployment(ITracer tracer)
         {
-            if (Environment.IsAzureEnvironment() 
+            if (Environment.IsAzureEnvironment()
                 && FileSystemHelpers.DirectoryExists(_environment.SSHKeyPath)
                 && OSDetector.IsOnWindows())
             {
@@ -798,7 +798,7 @@ namespace Kudu.Core.Deployment
 
                 if (!String.Equals(src, dst, StringComparison.OrdinalIgnoreCase))
                 {
-                    // copy %HOME%\.ssh to %USERPROFILE%\.ssh key to workaround 
+                    // copy %HOME%\.ssh to %USERPROFILE%\.ssh key to workaround
                     // npm with private ssh git dependency
                     using (tracer.Step("Copying SSH keys"))
                     {
@@ -840,7 +840,7 @@ namespace Kudu.Core.Deployment
         private static string GetOutputPath(DeploymentInfoBase deploymentInfo, IEnvironment environment, IDeploymentSettingsManager perDeploymentSettings)
         {
             string targetSubDirectoryRelativePath = perDeploymentSettings.GetTargetPath();
-            
+
             if (string.IsNullOrWhiteSpace(targetSubDirectoryRelativePath))
             {
                 targetSubDirectoryRelativePath = deploymentInfo?.TargetSubDirectoryRelativePath;
@@ -887,13 +887,13 @@ namespace Kudu.Core.Deployment
         private IDeploymentStatusFile VerifyDeployment(string id, bool isDeploying)
         {
             IDeploymentStatusFile statusFile = _status.Open(id);
-            
+
             if (statusFile == null)
             {
                 return null;
             }
-            
-            
+
+
             if (statusFile.Complete)
             {
                 return statusFile;
@@ -913,7 +913,7 @@ namespace Kudu.Core.Deployment
 	    }
 	    catch (Exception)
 	    {
-	   	    _traceFactory.GetTracer().Step("Defaulting to lock invalidation time 4 mins"); 
+	   	    _traceFactory.GetTracer().Step("Defaulting to lock invalidation time 4 mins");
 	    }
             if (!isDeploying)
             {
@@ -954,7 +954,7 @@ namespace Kudu.Core.Deployment
         }
 
         private static void TryTouchWatchedFile(DeploymentContext context, DeploymentInfoBase deploymentInfo)
-        {	        
+        {
             try
             {
                 string watchedFileRelativePath = deploymentInfo?.WatchedFilePath;
@@ -962,7 +962,7 @@ namespace Kudu.Core.Deployment
                 {
                     watchedFileRelativePath = "web.config";
                 }
-                
+
                 string watchedFileAbsolutePath = Path.Combine(context.OutputPath, watchedFileRelativePath);
 
                 if (File.Exists(watchedFileAbsolutePath))
@@ -1008,7 +1008,8 @@ namespace Kudu.Core.Deployment
         {
             var path = GetLogPath(id);
             var logger = GetLoggerForFile(path);
-            return new ProgressLogger(id, _status, new CascadeLogger(logger, _globalLogger));
+            ProgressLogger progressLogger = new ProgressLogger(id, _status, new CascadeLogger(logger, new DeploymentLogger(_globalLogger, id)));
+            return progressLogger;
         }
 
         /// <summary>
