@@ -79,6 +79,9 @@ RUN mkdir /opt/webssh \
   && rm -rf /tmp/* \
   && rm -rf /var/lib/apt/lists/*
 
+# Install azcopy
+RUN curl -L https://aka.ms/downloadazcopy-v10-linux | tar -C /usr/local/bin -xzf - --strip-components=1
+
 # Install NODE 10.19
 RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   && case "${dpkgArch##*-}" in \
