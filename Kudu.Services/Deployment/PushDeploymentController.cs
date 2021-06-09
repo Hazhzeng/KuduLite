@@ -187,7 +187,7 @@ namespace Kudu.Services.Deployment
                     DoSyncTriggers = syncTriggers,
                     OverwriteWebsiteRunFromPackage = overwriteWebsiteRunFromPackage && _environment.IsOnLinuxConsumption
                 };
-                return await PushDeployAsync(deploymentInfo, isAsync, HttpContext);
+                return await PushDeployAsync(deploymentInfo, isAsync, HttpContext, requestJson);
             }
         }
 
@@ -551,7 +551,7 @@ namespace Kudu.Services.Deployment
         }
 
         private async Task<IActionResult> PushDeployAsync(ArtifactDeploymentInfo deploymentInfo, bool isAsync,
-            HttpContext context)
+            HttpContext context, JObject requestJson = null)
         {
             string artifactTempPath;
             if (string.IsNullOrWhiteSpace(deploymentInfo.TargetFileName))
@@ -679,6 +679,10 @@ namespace Kudu.Services.Deployment
                     // Shouldn't happen here, as we disallow deferral for this use case
                     return Accepted();
                 case FetchDeploymentRequestResult.RanSynchronously:
+                    if (ArmUtils.IsArmRequest(Request) && requestJson != null)
+                    {
+                        return Ok(requestJson);
+                    }
                     return Ok();
                 case FetchDeploymentRequestResult.ConflictDeploymentInProgress:
                     return StatusCode(StatusCodes.Status409Conflict, Resources.Error_DeploymentInProgress);
