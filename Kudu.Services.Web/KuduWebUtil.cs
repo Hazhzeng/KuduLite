@@ -224,9 +224,9 @@ namespace Kudu.Services.Web
                         FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("/usr/bin/mono", ""));
                     }
                 }
-                else if (!fileText.Contains("benv") && fileText.Contains("dotnet") && isRunningOnAzure)
+                else if (fileText.Contains("benv dotnet=2.2 dotnet") && isRunningOnAzure)
                 {
-                    FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("benv dotnet=3.1 dotnet", ""));
+                    FileSystemHelpers.WriteAllText(gitPostReceiveHookFile, fileText.Replace("benv dotnet=2.2 dotnet", ""));
                 }
             }
 
