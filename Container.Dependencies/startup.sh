@@ -64,7 +64,13 @@ eval $(printenv | awk -F= '{print "export " $1"="$2 }' >> /etc/profile)
 
 service ssh restart
 sed -i "s/webssh-port-placeholder/$KUDU_WEBSSH_PORT/g" /opt/webssh/config.json
-/bin/bash -c "benv node=9 npm=6 /opt/webssh/webssh-watcher.sh node /opt/webssh/index.js &"
+
+if [ "$KUDU_ENV" == "Buster" ]
+then
+	/bin/bash -c "/opt/webssh/webssh-watcher.sh node /opt/webssh/index.js &"
+else
+	/bin/bash -c "benv node=9 npm=6 /opt/webssh/webssh-watcher.sh node /opt/webssh/index.js &"
+fi
 
 cd /opt/Kudu
 

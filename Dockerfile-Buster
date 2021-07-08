@@ -30,6 +30,7 @@ ENV KUDU_WEBSSH_PORT=3000
 ENV WEBSITE_SSH_USER=root
 ENV WEBSITE_SSH_PASSWORD=Docker!
 
+ENV KUDU_ENV=Buster
 ENV KUDU_BUILD_VERSION=1.0.0
 
 COPY Container.Dependencies/webssh.zip Container.Dependencies/ssh /tmp/
@@ -130,6 +131,9 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 COPY --from=build-env /opt/Kudu /opt/Kudu
 
 COPY Container.Dependencies/startup.sh /
+COPY Container.Dependencies/webssh-watcher.sh /opt/webssh
+RUN chmod +x /startup.sh \
+    && chmod +x /opt/webssh/webssh-watcher.sh
 
 RUN chmod 777 /startup.sh \
   && pam-auth-update \
