@@ -68,6 +68,7 @@ RUN eval "$(rbenv init -)" \
   && rbenv install "2.4.5" \
   && rbenv install "2.5.5" \
   && rbenv install "2.6.2" \
+  && rbenv install "2.7.3" \
   && rbenv rehash \
   && rbenv global $WEBSITES_DEFAULT_RUBY_VERSION \
   && ls /usr/local -a \
@@ -80,6 +81,8 @@ RUN eval "$(rbenv init -)" \
   && rbenv local 2.5.5 \
   && gem install bundler --version "=1.13.6" \
   && rbenv local 2.6.2 \
+  && gem install bundler --version "=1.13.6" \
+  && rbenv local 2.7.3 \
   && gem install bundler --version "=1.13.6" \
   && rbenv local $WEBSITES_DEFAULT_RUBY_VERSION \
   && chmod -R 777 /usr/local/.rbenv/versions \
@@ -166,9 +169,8 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
     B9E2F5981AA6E0CD28160D9FF13993A75599653C \
     C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
   ; do \
-    gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
-    gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
-    gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" || \
+    gpg --batch --keyserver pgp.mit.edu:80 --recv-keys "$key" ; \
   done \
   && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.xz" \
   && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
