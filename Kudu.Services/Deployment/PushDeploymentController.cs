@@ -508,7 +508,7 @@ namespace Kudu.Services.Deployment
                 try
                 {
                     // ARM template should have properties field and a packageUri field inside the properties field.
-                    string packageUri = requestObject.Value<JObject>("properties").Value<string>("packageUri");
+                    string packageUri = requestObject.Value<JObject>("properties") != null ? requestObject.Value<JObject>("properties").Value<string>("packageUri") : requestObject.Value<string>("packageUri");
                     if (string.IsNullOrEmpty(packageUri))
                     {
                         throw new ArgumentException("Invalid Url in the JSON request");
