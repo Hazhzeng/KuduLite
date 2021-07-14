@@ -22,6 +22,7 @@
     <Message Importance="High" Text="%0a+++ Building KuduLite +++%0a%0a" />
   </Target>
   <ItemGroup>
+    <PackageReference Include="AspNetCore.Proxy" Version="4.2.0" />
     <PackageReference Include="AspNetCore.RouteAnalyzer" Version="0.5.3" />
     <PackageReference Include="log4net" Version="2.0.8" />
   </ItemGroup>
@@ -76,8 +77,8 @@
   <Target Name="PutNodeModulesInBinDir" AfterTargets="Build">    
 	  <Exec Command="$(ProjectDir)\updateNodeModules.cmd &quot;$(PublishDir)&quot;" Condition="'$(OS)' == 'Windows_NT' AND  '$(Configuration)'=='Release'" />
 	  <Exec Command="$(ProjectDir)\updateNodeModules.cmd &quot;$(OutputPath)&quot;" Condition="'$(OS)' == 'Windows_NT' AND  '$(Configuration)'=='Debug'" />
-    <Exec Command="sh $(ProjectDir)updateNodeModules.sh &quot;$(PublishDir)&quot;" Condition="'$(OS)' != 'Windows_NT' AND '$(Configuration)' == 'Release'" />
-	  <Exec Command="sh $(ProjectDir)updateNodeModules.sh &quot;$(OutputPath)&quot;" Condition="'$(OS)' != 'Windows_NT' AND '$(Configuration)' == 'Debug'" />
+    <Exec Command="sh $(ProjectDir)/updateNodeModules.sh &quot;$(PublishDir)&quot;" Condition="'$(OS)' != 'Windows_NT' AND '$(Configuration)' == 'Release'" />
+	  <Exec Command="sh $(ProjectDir)/updateNodeModules.sh &quot;$(OutputPath)&quot;" Condition="'$(OS)' != 'Windows_NT' AND '$(Configuration)' == 'Debug'" />
   </Target>
   <Target Name="BuildKuduConsole" AfterTargets="Build">
     <Message Text="%0a%0aBuilding KuduConsole%0a" Importance="high" />
