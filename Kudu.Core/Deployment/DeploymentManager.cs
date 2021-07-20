@@ -721,19 +721,24 @@ namespace Kudu.Core.Deployment
                         await builder.Build(context);
                         builder.PostBuild(context);
                         await RestartMainSiteIfNeeded(tracer, logger, deploymentInfo);
-
-                        if (FunctionAppHelper.LooksLikeFunctionApp() && _environment.IsOnLinuxConsumption)
+                        
+                        if (FunctionAppHelper.LooksLikeFunctionApp())
                         {
-                            // A Linux consumption function app deployment requires (no matter whether it is oryx build or basic deployment)
-                            // 1. packaging the output folder
-                            // 2. upload the artifact to user's storage account
-                            // 3. reset the container workers after deployment
-                            await LinuxConsumptionDeploymentHelper.SetupLinuxConsumptionFunctionAppDeployment(
-                                env: _environment,
-                                settings: _settings,
-                                context: context,
-                                shouldSyncTriggers: deploymentInfo.DoSyncTriggers,
-                                shouldUpdateWebsiteRunFromPackage: deploymentInfo.OverwriteWebsiteRunFromPackage);
+                            await DependencyLogHelper.LogDependenciesFile(context.RepositoryPath);
+
+                            if (_environment.IsOnLinuxConsumption)
+                            {
+                                // A Linux consumption function app deployment requires (no matter whether it is oryx build or basic deployment)
+                                // 1. packaging the output folder
+                                // 2. upload the artifact to user's storage account
+                                // 3. reset the container workers after deployment
+                                await LinuxConsumptionDeploymentHelper.SetupLinuxConsumptionFunctionAppDeployment(
+                                    env: _environment,
+                                    settings: _settings,
+                                    context: context,
+                                    shouldSyncTriggers: deploymentInfo.DoSyncTriggers,
+                                    shouldUpdateWebsiteRunFromPackage: deploymentInfo.OverwriteWebsiteRunFromPackage);
+                            }
                         }
 
                         await PostDeploymentHelper.SyncFunctionsTriggers(
